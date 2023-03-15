@@ -6,8 +6,8 @@
 
 (function () {
     'use strict';
-	let wwSettings;
-	let wEvents;
+    let wwSettings;
+    let wEvents;
 
     function bootstrap(tries = 1) {
         if (!location.href.match(/^https:\/\/(www|beta)\.waze\.com\/(?!user\/)(.{2,6}\/)?editor\/?.*$/))
@@ -29,12 +29,12 @@
         console.log("WazeWrap initializing...");
         WazeWrap.Version = "2023.03.14.04";
         WazeWrap.isBetaEditor = /beta/.test(location.href);
-		
-	loadSettings();
-	    if(W.map.events)
-		    wEvents = W.map.events;
-	    else
-		    wEvents = W.map.getMapEventsListener();
+
+        loadSettings();
+        if(W.map.events)
+            wEvents = W.map.events;
+        else
+            wEvents = W.map.getMapEventsListener();
 
         //SetUpRequire();
         wEvents.register("moveend", this, RestoreMissingSegmentFunctions);
@@ -44,7 +44,7 @@
         RestoreMissingSegmentFunctions();
         RestoreMissingNodeFunctions();
         RestoreMissingOLKMLSupport();
-	RestoreMissingWRule();
+        RestoreMissingWRule();
 
         WazeWrap.Geometry = new Geometry();
         WazeWrap.Model = new Model();
@@ -55,7 +55,7 @@
         WazeWrap.String = new String();
         WazeWrap.Events = new Events();
         WazeWrap.Alerts = new Alerts();
-	    WazeWrap.Remote = new Remote();
+        WazeWrap.Remote = new Remote();
 
         WazeWrap.getSelectedFeatures = function () {
             return W.selectionManager.getSelectedFeatures();
@@ -117,75 +117,75 @@
         }
 
         WazeWrap.Ready = true;
-	    
-		initializeWWInterface();
+
+        initializeWWInterface();
 
         console.log('WazeWrap Loaded');
     }
-	
-	function initializeWWInterface(){
-		var $section = $("<div>", {style:"padding:8px 16px", id:"WMEPIESettings"});
+
+    function initializeWWInterface(){
+        var $section = $("<div>", {style:"padding:8px 16px", id:"WMEPIESettings"});
         $section.html([
-			'<h4 style="margin-bottom:0px;"><b>WazeWrap</b></h4>',
-			`<h6 style="margin-top:0px;">${WazeWrap.Version}</h6>`,
-			`<div id="divEditorPIN" class="controls-container">Editor PIN: <input type="${wwSettings.editorPIN != "" ? "password" : "text"}" size="10" id="wwEditorPIN" ${wwSettings.editorPIN != "" ? 'disabled' : ''}/>${wwSettings.editorPIN === "" ? '<button id="wwSetPin">Set PIN</button>' : ''}<i class="fa fa-eye fa-lg" style="display:${wwSettings.editorPIN === "" ? 'none' : 'inline-block'}" id="showWWEditorPIN" aria-hidden="true"></i></div><br/>`,
-			`<div id="changePIN" class="controls-container" style="display:${wwSettings.editorPIN !== "" ? "block" : "none"}"><button id="wwChangePIN">Change PIN</button></div>`,
-			'<div id="divShowAlertHistory" class="controls-container"><input type="checkbox" id="_cbShowAlertHistory" class="wwSettingsCheckbox" /><label for="_cbShowAlertHistory">Show alerts history</label></div>'
-			].join(' '));
-		new WazeWrap.Interface.Tab('WW', $section.html(), postInterfaceSetup);
-	}
-	
-	function postInterfaceSetup(){
+            '<h4 style="margin-bottom:0px;"><b>WazeWrap</b></h4>',
+            `<h6 style="margin-top:0px;">${WazeWrap.Version}</h6>`,
+            `<div id="divEditorPIN" class="controls-container">Editor PIN: <input type="${wwSettings.editorPIN != "" ? "password" : "text"}" size="10" id="wwEditorPIN" ${wwSettings.editorPIN != "" ? 'disabled' : ''}/>${wwSettings.editorPIN === "" ? '<button id="wwSetPin">Set PIN</button>' : ''}<i class="fa fa-eye fa-lg" style="display:${wwSettings.editorPIN === "" ? 'none' : 'inline-block'}" id="showWWEditorPIN" aria-hidden="true"></i></div><br/>`,
+            `<div id="changePIN" class="controls-container" style="display:${wwSettings.editorPIN !== "" ? "block" : "none"}"><button id="wwChangePIN">Change PIN</button></div>`,
+            '<div id="divShowAlertHistory" class="controls-container"><input type="checkbox" id="_cbShowAlertHistory" class="wwSettingsCheckbox" /><label for="_cbShowAlertHistory">Show alerts history</label></div>'
+        ].join(' '));
+        new WazeWrap.Interface.Tab('WW', $section.html(), postInterfaceSetup);
+    }
+
+    function postInterfaceSetup(){
         $('#wwEditorPIN')[0].value = wwSettings.editorPIN;
-		setChecked('_cbShowAlertHistory', wwSettings.showAlertHistoryIcon);
-		
-		if(!wwSettings.showAlertHistoryIcon)
-			$('.WWAlertsHistory').css('display', 'none');
-		
-		$('#showWWEditorPIN').mouseover(function(){
-			$('#wwEditorPIN').attr('type', 'text');
-		});
-		
-		$('#showWWEditorPIN').mouseleave(function(){
-			$('#wwEditorPIN').attr('type', 'password');
-		});
-		
-		$('#wwSetPin').click(function(){
-			let pin = $('#wwEditorPIN')[0].value;
-			if(pin != ""){
-				wwSettings.editorPIN = pin;
-				saveSettings();
-				$('#showWWEditorPIN').css('display', 'inline-block');
-				$('#wwEditorPIN').css('type', 'password');
-				$('#wwEditorPIN').attr("disabled", true);
-				$('#wwSetPin').css("display", 'none');
-				$('#changePIN').css("display", 'block');
-			}
-		});
-		
-		$('#wwChangePIN').click(function(){
-			WazeWrap.Alerts.prompt("WazeWrap", "This will <b>not</b> change the PIN stored with your settings, only the PIN that is stored on your machine to lookup/save your settings. \n\nChanging your PIN can result in a loss of your settings on the server and/or your local machine.  Proceed only if you are sure you need to change this value. \n\n Enter your new PIN", '', function(e, inputVal){
-				wwSettings.editorPIN = inputVal;
-				$('#wwEditorPIN')[0].value = inputVal;
-				saveSettings();
-			});
-		});
-		
-		$('#_cbShowAlertHistory').change(function(){
-			if(this.checked)
-				$('.WWAlertsHistory').css('display', 'block');
-			else
-				$('.WWAlertsHistory').css('display', 'none');
-			wwSettings.showAlertHistoryIcon = this.checked;
-			saveSettings();
-		});
-	}
-	
-	function setChecked(checkboxId, checked) {
+        setChecked('_cbShowAlertHistory', wwSettings.showAlertHistoryIcon);
+
+        if(!wwSettings.showAlertHistoryIcon)
+            $('.WWAlertsHistory').css('display', 'none');
+
+        $('#showWWEditorPIN').mouseover(function(){
+            $('#wwEditorPIN').attr('type', 'text');
+        });
+
+        $('#showWWEditorPIN').mouseleave(function(){
+            $('#wwEditorPIN').attr('type', 'password');
+        });
+
+        $('#wwSetPin').click(function(){
+            let pin = $('#wwEditorPIN')[0].value;
+            if(pin != ""){
+                wwSettings.editorPIN = pin;
+                saveSettings();
+                $('#showWWEditorPIN').css('display', 'inline-block');
+                $('#wwEditorPIN').css('type', 'password');
+                $('#wwEditorPIN').attr("disabled", true);
+                $('#wwSetPin').css("display", 'none');
+                $('#changePIN').css("display", 'block');
+            }
+        });
+
+        $('#wwChangePIN').click(function(){
+            WazeWrap.Alerts.prompt("WazeWrap", "This will <b>not</b> change the PIN stored with your settings, only the PIN that is stored on your machine to lookup/save your settings. \n\nChanging your PIN can result in a loss of your settings on the server and/or your local machine.  Proceed only if you are sure you need to change this value. \n\n Enter your new PIN", '', function(e, inputVal){
+                wwSettings.editorPIN = inputVal;
+                $('#wwEditorPIN')[0].value = inputVal;
+                saveSettings();
+            });
+        });
+
+        $('#_cbShowAlertHistory').change(function(){
+            if(this.checked)
+                $('.WWAlertsHistory').css('display', 'block');
+            else
+                $('.WWAlertsHistory').css('display', 'none');
+            wwSettings.showAlertHistoryIcon = this.checked;
+            saveSettings();
+        });
+    }
+
+    function setChecked(checkboxId, checked) {
         $('#' + checkboxId).prop('checked', checked);
     }
-	
-	function loadSettings() {
+
+    function loadSettings() {
         wwSettings = $.parseJSON(localStorage.getItem("_wazewrap_settings"));
         let _defaultsettings = {
             showAlertHistoryIcon: true,
@@ -193,8 +193,8 @@
         };
         wwSettings = $.extend({}, _defaultsettings, wwSettings);
     }
-	
-	function saveSettings() {
+
+    function saveSettings() {
         if (localStorage) {
             let settings = {
                 showAlertHistoryIcon: wwSettings.showAlertHistoryIcon,
@@ -237,16 +237,16 @@
             );
 
             await $.getScript('https://cdn.staticaly.com/gh/WazeDev/toastr/master/build/toastr.min.js');
-		wazedevtoastr.options = {
-		    target: '#map',
-		    timeOut: 6000,
-		    positionClass: 'toast-top-center-wide',
-		    closeOnHover: false,
-		    closeDuration: 0,
-		    showDuration: 0,
-		    closeButton: true,
-		    progressBar: true
-		};
+            wazedevtoastr.options = {
+                target: '#map',
+                timeOut: 6000,
+                positionClass: 'toast-top-center-wide',
+                closeOnHover: false,
+                closeDuration: 0,
+                showDuration: 0,
+                closeButton: true,
+                progressBar: true
+            };
 
             if ($('.WWAlertsHistory').length > 0)
                 return;
@@ -341,18 +341,18 @@
         ].join(' ');
         $('<style type="text/css">' + css + '</style>').appendTo('head');
     }
-	
-	function RestoreMissingWRule(){
-		if(!W.Rule){
-			W.Rule = OpenLayers.Class(OpenLayers.Rule, {
-				getContext(feature) {
-				return feature;
-				},
 
-				CLASS_NAME: "Waze.Rule"
-			});
-		}
-	}
+    function RestoreMissingWRule(){
+        if(!W.Rule){
+            W.Rule = OpenLayers.Class(OpenLayers.Rule, {
+                getContext(feature) {
+                    return feature;
+                },
+
+                CLASS_NAME: "Waze.Rule"
+            });
+        }
+    }
 
     function RestoreMissingSegmentFunctions() {
         if (W.model.segments.getObjectArray().length > 0) {
@@ -396,11 +396,11 @@
         if (!OpenLayers.Format.KML) {
             OpenLayers.Format.KML = OpenLayers.Class(OpenLayers.Format.XML, {
                 namespaces: { kml: "http://www.opengis.net/kml/2.2", gx: "http://www.google.com/kml/ext/2.2" }, kmlns: "http://earth.google.com/kml/2.0", placemarksDesc: "No description available", foldersName: "OL export", foldersDesc: "Exported on " + new Date, extractAttributes: !0, kvpAttributes: !1, extractStyles: !1, extractTracks: !1, trackAttributes: null, internalns: null, features: null, styles: null, styleBaseUrl: "", fetched: null, maxDepth: 0, initialize: function (a) {
-                this.regExes =
-                    { trimSpace: /^\s*|\s*$/g, removeSpace: /\s*/g, splitSpace: /\s+/, trimComma: /\s*,\s*/g, kmlColor: /(\w{2})(\w{2})(\w{2})(\w{2})/, kmlIconPalette: /root:\/\/icons\/palette-(\d+)(\.\w+)/, straightBracket: /\$\[(.*?)\]/g }; this.externalProjection = new OpenLayers.Projection("EPSG:4326"); OpenLayers.Format.XML.prototype.initialize.apply(this, [a])
+                    this.regExes =
+                        { trimSpace: /^\s*|\s*$/g, removeSpace: /\s*/g, splitSpace: /\s+/, trimComma: /\s*,\s*/g, kmlColor: /(\w{2})(\w{2})(\w{2})(\w{2})/, kmlIconPalette: /root:\/\/icons\/palette-(\d+)(\.\w+)/, straightBracket: /\$\[(.*?)\]/g }; this.externalProjection = new OpenLayers.Projection("EPSG:4326"); OpenLayers.Format.XML.prototype.initialize.apply(this, [a])
                 }, read: function (a) { this.features = []; this.styles = {}; this.fetched = {}; return this.parseData(a, { depth: 0, styleBaseUrl: this.styleBaseUrl }) }, parseData: function (a, b) {
-                "string" == typeof a &&
-                    (a = OpenLayers.Format.XML.prototype.read.apply(this, [a])); for (var c = ["Link", "NetworkLink", "Style", "StyleMap", "Placemark"], d = 0, e = c.length; d < e; ++d) { var f = c[d], g = this.getElementsByTagNameNS(a, "*", f); if (0 != g.length) switch (f.toLowerCase()) { case "link": case "networklink": this.parseLinks(g, b); break; case "style": this.extractStyles && this.parseStyles(g, b); break; case "stylemap": this.extractStyles && this.parseStyleMaps(g, b); break; case "placemark": this.parseFeatures(g, b) } } return this.features
+                    "string" == typeof a &&
+                        (a = OpenLayers.Format.XML.prototype.read.apply(this, [a])); for (var c = ["Link", "NetworkLink", "Style", "StyleMap", "Placemark"], d = 0, e = c.length; d < e; ++d) { var f = c[d], g = this.getElementsByTagNameNS(a, "*", f); if (0 != g.length) switch (f.toLowerCase()) { case "link": case "networklink": this.parseLinks(g, b); break; case "style": this.extractStyles && this.parseStyles(g, b); break; case "stylemap": this.extractStyles && this.parseStyleMaps(g, b); break; case "placemark": this.parseFeatures(g, b) } } return this.features
                 }, parseLinks: function (a,
                     b) { if (b.depth >= this.maxDepth) return !1; var c = OpenLayers.Util.extend({}, b); c.depth++; for (var d = 0, e = a.length; d < e; d++) { var f = this.parseProperty(a[d], "*", "href"); f && !this.fetched[f] && (this.fetched[f] = !0, (f = this.fetchLink(f)) && this.parseData(f, c)) } }, fetchLink: function (a) { if (a = OpenLayers.Request.GET({ url: a, async: !1 })) return a.responseText }, parseStyles: function (a, b) { for (var c = 0, d = a.length; c < d; c++) { var e = this.parseStyle(a[c]); e && (this.styles[(b.styleBaseUrl || "") + "#" + e.id] = e) } }, parseKmlColor: function (a) {
                         var b =
@@ -425,10 +425,10 @@
                     }, parseFeatures: function (a, b) {
                         for (var c = [], d = 0, e = a.length; d < e; d++) {
                             var f = a[d], g = this.parseFeature.apply(this, [f]); if (g) {
-                            this.extractStyles && (g.attributes && g.attributes.styleUrl) && (g.style = this.getStyle(g.attributes.styleUrl, b)); if (this.extractStyles) { var h = this.getElementsByTagNameNS(f, "*", "Style")[0]; if (h && (h = this.parseStyle(h))) g.style = OpenLayers.Util.extend(g.style, h) } if (this.extractTracks) {
-                                if ((f = this.getElementsByTagNameNS(f, this.namespaces.gx, "Track")) && 0 < f.length) g = { features: [], feature: g },
-                                    this.readNode(f[0], g), 0 < g.features.length && c.push.apply(c, g.features)
-                            } else c.push(g)
+                                this.extractStyles && (g.attributes && g.attributes.styleUrl) && (g.style = this.getStyle(g.attributes.styleUrl, b)); if (this.extractStyles) { var h = this.getElementsByTagNameNS(f, "*", "Style")[0]; if (h && (h = this.parseStyle(h))) g.style = OpenLayers.Util.extend(g.style, h) } if (this.extractTracks) {
+                                    if ((f = this.getElementsByTagNameNS(f, this.namespaces.gx, "Track")) && 0 < f.length) g = { features: [], feature: g },
+                                        this.readNode(f[0], g), 0 < g.features.length && c.push.apply(c, g.features)
+                                } else c.push(g)
                             } else throw "Bad Placemark: " + d;
                         } this.features = this.features.concat(c)
                     }, readers: {
@@ -439,15 +439,15 @@
                                         f; ++e)d = this.trackAttributes[e], c.attributes[d] = [], d in this.readers.kml || (this.readers.kml[d] = this.readers.kml._trackPointAttribute)
                                 } this.readChildNodes(a, c); if (c.whens.length !== c.points.length) throw Error("gx:Track with unequal number of when (" + c.whens.length + ") and gx:coord (" + c.points.length + ") elements."); var g = 0 < c.angles.length; if (g && c.whens.length !== c.angles.length) throw Error("gx:Track with unequal number of when (" + c.whens.length + ") and gx:angles (" + c.angles.length + ") elements."); for (var h,
                                     i, e = 0, f = c.whens.length; e < f; ++e) {
-                                        h = b.feature.clone(); h.fid = b.feature.fid || b.feature.id; i = c.points[e]; h.geometry = i; "z" in i && (h.attributes.altitude = i.z); this.internalProjection && this.externalProjection && h.geometry.transform(this.externalProjection, this.internalProjection); if (this.trackAttributes) { i = 0; for (var j = this.trackAttributes.length; i < j; ++i)h.attributes[d] = c.attributes[this.trackAttributes[i]][e] } h.attributes.when = c.whens[e]; h.attributes.trackId = b.feature.id; g && (i = c.angles[e], h.attributes.heading =
-                                            parseFloat(i[0]), h.attributes.tilt = parseFloat(i[1]), h.attributes.roll = parseFloat(i[2])); b.features.push(h)
+                                    h = b.feature.clone(); h.fid = b.feature.fid || b.feature.id; i = c.points[e]; h.geometry = i; "z" in i && (h.attributes.altitude = i.z); this.internalProjection && this.externalProjection && h.geometry.transform(this.externalProjection, this.internalProjection); if (this.trackAttributes) { i = 0; for (var j = this.trackAttributes.length; i < j; ++i)h.attributes[d] = c.attributes[this.trackAttributes[i]][e] } h.attributes.when = c.whens[e]; h.attributes.trackId = b.feature.id; g && (i = c.angles[e], h.attributes.heading =
+                                        parseFloat(i[0]), h.attributes.tilt = parseFloat(i[1]), h.attributes.roll = parseFloat(i[2])); b.features.push(h)
                                 }
                             }, coord: function (a, b) { var c = this.getChildValue(a).replace(this.regExes.trimSpace, "").split(/\s+/), d = new OpenLayers.Geometry.Point(c[0], c[1]); 2 < c.length && (d.z = parseFloat(c[2])); b.points.push(d) }, angles: function (a, b) { var c = this.getChildValue(a).replace(this.regExes.trimSpace, "").split(/\s+/); b.angles.push(c) }
                         }
                     }, parseFeature: function (a) {
                         for (var b = ["MultiGeometry", "Polygon", "LineString", "Point"],
                             c, d, e, f = 0, g = b.length; f < g; ++f)if (c = b[f], this.internalns = a.namespaceURI ? a.namespaceURI : this.kmlns, d = this.getElementsByTagNameNS(a, this.internalns, c), 0 < d.length) { if (b = this.parseGeometry[c.toLowerCase()]) e = b.apply(this, [d[0]]), this.internalProjection && this.externalProjection && e.transform(this.externalProjection, this.internalProjection); else throw new TypeError("Unsupported geometry type: " + c); break } var h; this.extractAttributes && (h = this.parseAttributes(a)); c = new OpenLayers.Feature.Vector(e, h); a = a.getAttribute("id") ||
-                                a.getAttribute("name"); null != a && (c.fid = a); return c
+                            a.getAttribute("name"); null != a && (c.fid = a); return c
                     }, getStyle: function (a, b) { var c = OpenLayers.Util.removeTail(a), d = OpenLayers.Util.extend({}, b); d.depth++; d.styleBaseUrl = c; !this.styles[a] && !OpenLayers.String.startsWith(a, "#") && d.depth <= this.maxDepth && !this.fetched[c] && (c = this.fetchLink(c)) && this.parseData(c, d); return OpenLayers.Util.extend({}, this.styles[a]) }, parseGeometry: {
                         point: function (a) {
                             var b = this.getElementsByTagNameNS(a, this.internalns, "coordinates"), a = []; if (0 < b.length) var c = b[0].firstChild.nodeValue,
@@ -472,7 +472,7 @@
                     }, parseProperty: function (a, b, c) {
                         var d, a = this.getElementsByTagNameNS(a, b, c); try { d = OpenLayers.Util.getXmlNodeValue(a[0]) } catch (e) {
                             d =
-                            null
+                                null
                         } return d
                     }, write: function (a) { OpenLayers.Util.isArray(a) || (a = [a]); for (var b = this.createElementNS(this.kmlns, "kml"), c = this.createFolderXML(), d = 0, e = a.length; d < e; ++d)c.appendChild(this.createPlacemarkXML(a[d])); b.appendChild(c); return OpenLayers.Format.XML.prototype.write.apply(this, [b]) }, createFolderXML: function () {
                         var a = this.createElementNS(this.kmlns, "Folder"); if (this.foldersName) { var b = this.createElementNS(this.kmlns, "name"), c = this.createTextNode(this.foldersName); b.appendChild(c); a.appendChild(b) } this.foldersDesc &&
@@ -490,7 +490,7 @@
                         }, multipolygon: function (a) { return this.buildGeometry.collection.apply(this, [a]) }, collection: function (a) { for (var b = this.createElementNS(this.kmlns, "MultiGeometry"), c, d = 0, e = a.components.length; d < e; ++d)(c = this.buildGeometryNode.apply(this, [a.components[d]])) && b.appendChild(c); return b }
                     }, buildCoordinatesNode: function (a) {
                         var b = this.createElementNS(this.kmlns, "coordinates"),
-                        c; if (c = a.components) { for (var d = c.length, e = Array(d), f = 0; f < d; ++f)a = c[f], e[f] = this.buildCoordinates(a); c = e.join(" ") } else c = this.buildCoordinates(a); c = this.createTextNode(c); b.appendChild(c); return b
+                            c; if (c = a.components) { for (var d = c.length, e = Array(d), f = 0; f < d; ++f)a = c[f], e[f] = this.buildCoordinates(a); c = e.join(" ") } else c = this.buildCoordinates(a); c = this.createTextNode(c); b.appendChild(c); return b
                     }, buildCoordinates: function (a) { this.internalProjection && this.externalProjection && (a = a.clone(), a.transform(this.internalProjection, this.externalProjection)); return a.x + "," + a.y }, buildExtendedData: function (a) {
                         var b = this.createElementNS(this.kmlns, "ExtendedData"), c; for (c in a) if (a[c] && "name" != c && "description" !=
                             c && "styleUrl" != c) { var d = this.createElementNS(this.kmlns, "Data"); d.setAttribute("name", c); var e = this.createElementNS(this.kmlns, "value"); if ("object" == typeof a[c]) { if (a[c].value && e.appendChild(this.createTextNode(a[c].value)), a[c].displayName) { var f = this.createElementNS(this.kmlns, "displayName"); f.appendChild(this.getXMLDoc().createCDATASection(a[c].displayName)); d.appendChild(f) } } else e.appendChild(this.createTextNode(a[c])); d.appendChild(e); b.appendChild(d) } return this.isSimpleContent(b) ? null : b
@@ -533,7 +533,7 @@
         };
 
         /**
-		 * Checks if the given lon & lat
+         * Checks if the given lon & lat
          * @function WazeWrap.Geometry.isGeometryInMapExtent
          * @param {lon, lat} object
          */
@@ -542,7 +542,7 @@
         };
 
         /**
-		 * Checks if the given geometry point is on screen
+         * Checks if the given geometry point is on screen
          * @function WazeWrap.Geometry.isGeometryInMapExtent
          * @param {OpenLayers.Geometry.Point} Geometry Point we are checking if it is in the extent
          */
@@ -552,7 +552,7 @@
         };
 
         /**
-		 * Calculates the distance between given points, returned in meters
+         * Calculates the distance between given points, returned in meters
          * @function WazeWrap.Geometry.calculateDistance
          * @param {OpenLayers.Geometry.Point} An array of OpenLayers.Geometry.Point with which to measure the total distance. A minimum of 2 points is needed.
          */
@@ -565,13 +565,13 @@
             return length; //multiply by 3.28084 to convert to feet
         };
 
-		/**
-		 * Finds the closest on-screen drivable segment to the given point, ignoring PLR and PR segments if the options are set
-		 * @function WazeWrap.Geometry.findClosestSegment
-		 * @param {OpenLayers.Geometry.Point} The given point to find the closest segment to
-		 * @param {boolean} If true, Parking Lot Road segments will be ignored when finding the closest segment
-		 * @param {boolean} If true, Private Road segments will be ignored when finding the closest segment
-		**/
+        /**
+         * Finds the closest on-screen drivable segment to the given point, ignoring PLR and PR segments if the options are set
+         * @function WazeWrap.Geometry.findClosestSegment
+         * @param {OpenLayers.Geometry.Point} The given point to find the closest segment to
+         * @param {boolean} If true, Parking Lot Road segments will be ignored when finding the closest segment
+         * @param {boolean} If true, Private Road segments will be ignored when finding the closest segment
+         **/
         this.findClosestSegment = function (mygeometry, ignorePLR, ignoreUnnamedPR) {
             let onscreenSegments = WazeWrap.Model.getOnscreenSegments();
             let minDistance = Infinity;
@@ -648,11 +648,11 @@
             return this.getStateName(segObj.attributes.primaryStreetID);
         };
 
-		/**
-		 * Returns an array of segment IDs for all segments that make up the roundabout the given segment is part of
-		 * @function WazeWrap.Model.getAllRoundaboutSegmentsFromObj
-		 * @param {Segment object (Waze/Feature/Vector/Segment)} The roundabout segment
-		**/
+        /**
+         * Returns an array of segment IDs for all segments that make up the roundabout the given segment is part of
+         * @function WazeWrap.Model.getAllRoundaboutSegmentsFromObj
+         * @param {Segment object (Waze/Feature/Vector/Segment)} The roundabout segment
+         **/
         this.getAllRoundaboutSegmentsFromObj = function (segObj) {
             if (segObj.model.attributes.junctionID === null)
                 return null;
@@ -660,11 +660,11 @@
             return W.model.junctions.objects[segObj.model.attributes.junctionID].attributes.segIDs;
         };
 
-		/**
-		 * Returns an array of all junction nodes that make up the roundabout
-		 * @function WazeWrap.Model.getAllRoundaboutJunctionNodesFromObj
-		 * @param {Segment object (Waze/Feature/Vector/Segment)} The roundabout segment
-		**/
+        /**
+         * Returns an array of all junction nodes that make up the roundabout
+         * @function WazeWrap.Model.getAllRoundaboutJunctionNodesFromObj
+         * @param {Segment object (Waze/Feature/Vector/Segment)} The roundabout segment
+         **/
         this.getAllRoundaboutJunctionNodesFromObj = function (segObj) {
             let RASegs = this.getAllRoundaboutSegmentsFromObj(segObj);
             let RAJunctionNodes = [];
@@ -674,28 +674,28 @@
             return RAJunctionNodes;
         };
 
-		/**
-		 * Checks if the given segment ID is a part of a roundabout
-		 * @function WazeWrap.Model.isRoundaboutSegmentID
-		 * @param {integer} The segment ID to check
-		**/
+        /**
+         * Checks if the given segment ID is a part of a roundabout
+         * @function WazeWrap.Model.isRoundaboutSegmentID
+         * @param {integer} The segment ID to check
+         **/
         this.isRoundaboutSegmentID = function (segmentID) {
             return W.model.segments.getObjectById(segmentID).attributes.junctionID !== null
         };
 
-		/**
-		 * Checks if the given segment object is a part of a roundabout
-		 * @function WazeWrap.Model.isRoundaboutSegmentID
-		 * @param {Segment object (Waze/Feature/Vector/Segment)} The segment object to check
-		**/
+        /**
+         * Checks if the given segment object is a part of a roundabout
+         * @function WazeWrap.Model.isRoundaboutSegmentID
+         * @param {Segment object (Waze/Feature/Vector/Segment)} The segment object to check
+         **/
         this.isRoundaboutSegmentObj = function (segObj) {
             return segObj.model.attributes.junctionID !== null;
         };
 
-		/**
-		 * Returns an array of all segments in the current extent
-		 * @function WazeWrap.Model.getOnscreenSegments
-		**/
+        /**
+         * Returns an array of all segments in the current extent
+         * @function WazeWrap.Model.getOnscreenSegments
+         **/
         this.getOnscreenSegments = function () {
             let segments = W.model.segments.objects;
             let mapExtent = W.map.getExtent();
@@ -960,30 +960,30 @@
     }
 
     function User() {
-		/**
-		 * Returns the "normalized" (1 based) user rank/level
-		 */
+        /**
+         * Returns the "normalized" (1 based) user rank/level
+         */
         this.Rank = function () {
             return W.loginManager.user.rank + 1;
         };
 
-		/**
-		 * Returns the current user's username
-		 */
+        /**
+         * Returns the current user's username
+         */
         this.Username = function () {
             return W.loginManager.user.userName;
         };
 
-		/**
-		 * Returns if the user is a CM (in any country)
-		 */
+        /**
+         * Returns if the user is a CM (in any country)
+         */
         this.isCM = function () {
             return W.loginManager.user.editableCountryIDs.length > 0
         };
 
-		/**
-		 * Returns if the user is an Area Manager (in any country)
-		 */
+        /**
+         * Returns if the user is an Area Manager (in any country)
+         */
         this.isAM = function () {
             return W.loginManager.user.isAreaManager;
         };
@@ -1004,11 +1004,11 @@
                 timeoutId: null,
                 forced: !1,
                 active: !1,
-				viewPortDiv: null,
+                viewPortDiv: null,
                 initialize: function (e) {
                     this.map = e,
                         this.uniqueID = myDragElement.baseID--;
-						this.viewPortDiv = W.map.getViewport();
+                    this.viewPortDiv = W.map.getViewport();
                 },
                 callback: function (e, t) {
                     if (this[e])
@@ -1209,8 +1209,8 @@
             },
             CLASS_NAME: "W.DivIcon"
         });
-    
-		this.Icon = OpenLayers.Class({
+
+        this.Icon = OpenLayers.Class({
             url: null,
             size: null,
             offset: null,
@@ -1249,7 +1249,7 @@
             CLASS_NAME: "OpenLayers.Icon"
         });
 
-	}
+    }
 
     function Util() {
         /**
@@ -1317,13 +1317,13 @@
             };
         }();
 
-		/**
-		 * Returns orthogonalized geometry for the given geometry and threshold
-		 * @function WazeWrap.Util.OrthogonalizeGeometry
-		 * @param {OpenLayers.Geometry} The OpenLayers.Geometry to orthogonalize
-		 * @param {integer} threshold to use for orthogonalization - the higher the threshold, the more nodes that will be removed
-		 * @return {OpenLayers.Geometry } Orthogonalized geometry
-		**/
+        /**
+         * Returns orthogonalized geometry for the given geometry and threshold
+         * @function WazeWrap.Util.OrthogonalizeGeometry
+         * @param {OpenLayers.Geometry} The OpenLayers.Geometry to orthogonalize
+         * @param {integer} threshold to use for orthogonalization - the higher the threshold, the more nodes that will be removed
+         * @return {OpenLayers.Geometry } Orthogonalized geometry
+         **/
         this.OrthogonalizeGeometry = function (geometry, threshold = 12) {
             let nomthreshold = threshold, // degrees within right or straight to alter
                 lowerThreshold = Math.cos((90 - nomthreshold) * Math.PI / 180),
@@ -1532,13 +1532,13 @@
             return Orthogonalize();
         };
 
-		/**
-		 * Returns the general location of the segment queried
-		 * @function WazeWrap.Util.findSegment
-		 * @param {OpenLayers.Geometry} The server to search on. The current server can be obtained from W.app.getAppRegionCode()
-		 * @param {integer} The segment ID to search for
-		 * @return {OpenLayers.Geometry.Point} A point at the general location of the segment, null if the segment is not found
-		**/
+        /**
+         * Returns the general location of the segment queried
+         * @function WazeWrap.Util.findSegment
+         * @param {OpenLayers.Geometry} The server to search on. The current server can be obtained from W.app.getAppRegionCode()
+         * @param {integer} The segment ID to search for
+         * @return {OpenLayers.Geometry.Point} A point at the general location of the segment, null if the segment is not found
+         **/
         this.findSegment = async function (server, segmentID) {
             let apiURL = location.origin;
             switch (server) {
@@ -1573,13 +1573,13 @@
             return result;
         };
 
-		/**
-		 * Returns the location of the venue queried
-		 * @function WazeWrap.Util.findVenue
-		 * @param {OpenLayers.Geometry} The server to search on. The current server can be obtained from W.app.getAppRegionCode()
-		 * @param {integer} The venue ID to search for
-		 * @return {OpenLayers.Geometry.Point} A point at the location of the venue, null if the venue is not found
-		**/
+        /**
+         * Returns the location of the venue queried
+         * @function WazeWrap.Util.findVenue
+         * @param {OpenLayers.Geometry} The server to search on. The current server can be obtained from W.app.getAppRegionCode()
+         * @param {integer} The venue ID to search for
+         * @return {OpenLayers.Geometry.Point} A point at the location of the venue, null if the venue is not found
+         **/
         this.findVenue = async function (server, venueID) {
             let apiURL = location.origin;
             switch (server) {
@@ -1679,19 +1679,19 @@
             };
         }();
 
-		/**
-		 * Creates a keyboard shortcut for the supplied callback event
-		 * @function WazeWrap.Interface.Shortcut
-		 * @param {string} 
-		 * @param {string} 
-		 * @param {string} 
-		 * @param {string} 
-		 * @param {string} 
-		 * @param {function} 
-		 * @param {object} 
-		 * @param {integer} The segment ID to search for
-		 * @return {OpenLayers.Geometry.Point} A point at the general location of the segment, null if the segment is not found
-		**/
+        /**
+         * Creates a keyboard shortcut for the supplied callback event
+         * @function WazeWrap.Interface.Shortcut
+         * @param {string} 
+         * @param {string} 
+         * @param {string} 
+         * @param {string} 
+         * @param {string} 
+         * @param {function} 
+         * @param {object} 
+         * @param {integer} The segment ID to search for
+         * @return {OpenLayers.Geometry.Point} A point at the general location of the segment, null if the segment is not found
+         **/
         this.Shortcut = class Shortcut {
             constructor(name, desc, group, title, shortcut, callback, scope) {
                 if ('string' === typeof name && name.length > 0 && 'string' === typeof shortcut && 'function' === typeof callback) {
@@ -1717,9 +1717,9 @@
             }
 
             /**
-		* Determines if the shortcut's action already exists.
-		* @private
-		*/
+             * Determines if the shortcut's action already exists.
+             * @private
+             */
             doesGroupExist() {
                 this.groupExists = 'undefined' !== typeof W.accelerators.Groups[this.group] &&
                     undefined !== typeof W.accelerators.Groups[this.group].members;
@@ -1727,18 +1727,18 @@
             }
 
             /**
-		* Determines if the shortcut's action already exists.
-		* @private
-		*/
+             * Determines if the shortcut's action already exists.
+             * @private
+             */
             doesActionExist() {
                 this.actionExists = 'undefined' !== typeof W.accelerators.Actions[this.name];
                 return this.actionExists;
             }
 
             /**
-		* Determines if the shortcut's event already exists.
-		* @private
-		*/
+             * Determines if the shortcut's event already exists.
+             * @private
+             */
             doesEventExist() {
                 this.eventExists = 'undefined' !== typeof W.accelerators.events.dispatcher._events[this.name] &&
                     W.accelerators.events.dispatcher._events[this.name].length > 0 &&
@@ -1748,9 +1748,9 @@
             }
 
             /**
-		* Creates the shortcut's group.
-		* @private
-		*/
+             * Creates the shortcut's group.
+             * @private
+             */
             createGroup() {
                 W.accelerators.Groups[this.group] = [];
                 W.accelerators.Groups[this.group].members = [];
@@ -1763,9 +1763,9 @@
             }
 
             /**
-		* Registers the shortcut's action.
-		* @private
-		*/
+             * Registers the shortcut's action.
+             * @private
+             */
             addAction() {
                 if (this.title)
                     I18n.translations[I18n.currentLocale()].keyboard_shortcuts.groups[this.group].members[this.name] = this.desc;
@@ -1773,25 +1773,25 @@
             }
 
             /**
-		* Registers the shortcut's event.
-		* @private
-		*/
+             * Registers the shortcut's event.
+             * @private
+             */
             addEvent() {
                 W.accelerators.events.register(this.name, this.scope, this.callback);
             }
 
             /**
-		* Registers the shortcut's keyboard shortcut.
-		* @private
-		*/
+             * Registers the shortcut's keyboard shortcut.
+             * @private
+             */
             registerShortcut() {
                 W.accelerators._registerShortcuts(this.shortcut);
             }
 
             /**
-		* Adds the keyboard shortcut to the map.
-		* @return {WazeWrap.Interface.Shortcut} The keyboard shortcut.
-		*/
+             * Adds the keyboard shortcut to the map.
+             * @return {WazeWrap.Interface.Shortcut} The keyboard shortcut.
+             */
             add() {
                 /* If the group is not already defined, initialize the group. */
                 if (!this.doesGroupExist()) {
@@ -1815,9 +1815,9 @@
             }
 
             /**
-		* Removes the keyboard shortcut from the map.
-		* @return {WazeWrap.Interface.Shortcut} The keyboard shortcut.
-		*/
+             * Removes the keyboard shortcut from the map.
+             * @return {WazeWrap.Interface.Shortcut} The keyboard shortcut.
+             */
             remove() {
                 if (this.doesEventExist()) {
                     W.accelerators.events.unregister(this.name, this.scope, this.callback);
@@ -1830,9 +1830,9 @@
             }
 
             /**
-		* Changes the keyboard shortcut and applies changes to the map.
-		* @return {WazeWrap.Interface.Shortcut} The keyboard shortcut.
-		*/
+             * Changes the keyboard shortcut and applies changes to the map.
+             * @return {WazeWrap.Interface.Shortcut} The keyboard shortcut.
+             */
             change(shortcut) {
                 if (shortcut) {
                     this.shortcut = {};
@@ -1843,39 +1843,39 @@
             }
         }
 
-		/**
-		 * Creates a tab in the side panel
-		 * @function WazeWrap.Interface.Tab
-		 * @param {string} 
-		 * @param {string} 
-		 * @param {function} 
-		 * @param {string} 
-		**/
+        /**
+         * Creates a tab in the side panel
+         * @function WazeWrap.Interface.Tab
+         * @param {string} 
+         * @param {string} 
+         * @param {function} 
+         * @param {string} 
+         **/
         this.Tab = async function Tab(name, content, callback, labelText) {
-			if(labelText == "")
-				labelText = name;
-			
-			const {tabLabel, tabPane} = W.userscripts.registerSidebarTab(name);
-			
-			tabLabel.innerText = labelText;
-			tabPane.innerHTML = content;
-			
-			await W.userscripts.waitForElementConnected(tabPane);
-			if('function' === typeof callback)
-				callback();
+            if(labelText == "")
+                labelText = name;
+
+            const {tabLabel, tabPane} = W.userscripts.registerSidebarTab(name);
+
+            tabLabel.innerText = labelText;
+            tabPane.innerHTML = content;
+
+            await W.userscripts.waitForElementConnected(tabPane);
+            if('function' === typeof callback)
+                callback();
 
         }
 
-		/**
-		 * Creates a checkbox in the layer menu
-		 * @function WazeWrap.Interface.AddLayerCheckbox
-		 * @param {string} 
-		 * @param {string} 
-		 * @param {boolean} 
-		 * @param {function} 
-		 * @param {object} 
-		 * @param {Layer object}
-		**/
+        /**
+         * Creates a checkbox in the layer menu
+         * @function WazeWrap.Interface.AddLayerCheckbox
+         * @param {string} 
+         * @param {string} 
+         * @param {boolean} 
+         * @param {function} 
+         * @param {object} 
+         * @param {Layer object}
+         **/
         this.AddLayerCheckbox = function (group, checkboxText, checked, callback, layer) {
             group = group.toLowerCase();
             let normalizedText = checkboxText.toLowerCase().replace(/\s/g, '_');
@@ -1890,11 +1890,11 @@
                 let newLI = $('<li class="group">');
                 newLI.html([
                     '<div class="layer-switcher-toggler-tree-category">',
-					'<i class="toggle-category w-icon-caret-down" data-group-id="GROUP_' + group.toUpperCase() + '"></i>',
-					'<wz-toggle-switch class="' + groupClass + ' hydrated" id="' + groupClass + '" ' + (groupChecked ? 'checked' : '') + '>',
-					'<label class="label-text" for="' + groupClass + '">' + checkboxText + '</label>',
+                    '<i class="toggle-category w-icon-caret-down" data-group-id="GROUP_' + group.toUpperCase() + '"></i>',
+                    '<wz-toggle-switch class="' + groupClass + ' hydrated" id="' + groupClass + '" ' + (groupChecked ? 'checked' : '') + '>',
+                    '<label class="label-text" for="' + groupClass + '">' + checkboxText + '</label>',
                     '</div>',
-					'</li></ul>'
+                    '</li></ul>'
                 ].join(' '));
 
                 groupList.append(newLI);
@@ -1913,7 +1913,7 @@
                 let $li = $('<li>');
                 $li.html([
                     '<wz-checkbox id="' + checkboxID + '" class="hydrated">',
-					checkboxText,
+                    checkboxText,
                     '</wz-checkbox>',
                 ].join(' '));
 
@@ -1945,18 +1945,18 @@
                 });
             };
 
-             buildLayerItem(checked);
+            buildLayerItem(checked);
         };
 
-		/**
-		 * Shows the script update window with the given update text
-		 * @function WazeWrap.Interface.ShowScriptUpdate
-		 * @param {string} 
-		 * @param {string} 
-		 * @param {string} 
-		 * @param {string} 
-		 * @param {string} 
-		**/
+        /**
+         * Shows the script update window with the given update text
+         * @function WazeWrap.Interface.ShowScriptUpdate
+         * @param {string} 
+         * @param {string} 
+         * @param {string} 
+         * @param {string} 
+         * @param {string} 
+         **/
         this.ShowScriptUpdate = function (scriptName, version, updateHTML, greasyforkLink = "", forumLink = "") {
             let settings;
             function loadSettings() {
@@ -2007,120 +2007,120 @@
         };
     }
 
-    function Alerts() {
-        this.success = function (scriptName, message) {
-            $(wazedevtoastr.success(message, scriptName)).clone().prependTo('#WWAlertsHistory-list > .toast-container-wazedev').find('.toast-close-button').remove();
-        }
+function Alerts() {
+    this.success = function (scriptName, message) {
+        $(wazedevtoastr.success(message, scriptName)).clone().prependTo('#WWAlertsHistory-list > .toast-container-wazedev').find('.toast-close-button').remove();
+    }
 
-        this.info = function (scriptName, message, disableTimeout, disableClickToClose) {
-            let options = {};
-            if (disableTimeout)
-                options.timeOut = 0;
-            if (disableClickToClose)
-                options.tapToDismiss = false;
-            $(wazedevtoastr.info(message, scriptName, options)).clone().prependTo('#WWAlertsHistory-list > .toast-container-wazedev').find('.toast-close-button').remove();
-        }
+    this.info = function (scriptName, message, disableTimeout, disableClickToClose) {
+        let options = {};
+        if (disableTimeout)
+            options.timeOut = 0;
+        if (disableClickToClose)
+            options.tapToDismiss = false;
+        $(wazedevtoastr.info(message, scriptName, options)).clone().prependTo('#WWAlertsHistory-list > .toast-container-wazedev').find('.toast-close-button').remove();
+    }
 
-        this.warning = function (scriptName, message) {
-            $(wazedevtoastr.warning(message, scriptName)).clone().prependTo('#WWAlertsHistory-list > .toast-container-wazedev').find('.toast-close-button').remove();
-        }
+    this.warning = function (scriptName, message) {
+        $(wazedevtoastr.warning(message, scriptName)).clone().prependTo('#WWAlertsHistory-list > .toast-container-wazedev').find('.toast-close-button').remove();
+    }
 
-        this.error = function (scriptName, message) {
-            $(wazedevtoastr.error(message, scriptName)).clone().prependTo('#WWAlertsHistory-list > .toast-container-wazedev').find('.toast-close-button').remove();
-        }
+    this.error = function (scriptName, message) {
+        $(wazedevtoastr.error(message, scriptName)).clone().prependTo('#WWAlertsHistory-list > .toast-container-wazedev').find('.toast-close-button').remove();
+    }
 
-        this.debug = function (scriptName, message) {
-            wazedevtoastr.debug(message, scriptName);
-        }
+    this.debug = function (scriptName, message) {
+        wazedevtoastr.debug(message, scriptName);
+    }
 
-        this.prompt = function (scriptName, message, defaultText = '', okFunction, cancelFunction) {
-            wazedevtoastr.prompt(message, scriptName, { promptOK: okFunction, promptCancel: cancelFunction, PromptDefaultInput: defaultText });
-        }
+    this.prompt = function (scriptName, message, defaultText = '', okFunction, cancelFunction) {
+        wazedevtoastr.prompt(message, scriptName, { promptOK: okFunction, promptCancel: cancelFunction, PromptDefaultInput: defaultText });
+    }
 
-        this.confirm = function (scriptName, message, okFunction, cancelFunction, okBtnText = "Ok", cancelBtnText = "Cancel") {
-            wazedevtoastr.confirm(message, scriptName, { confirmOK: okFunction, confirmCancel: cancelFunction, ConfirmOkButtonText: okBtnText, ConfirmCancelButtonText: cancelBtnText });
+    this.confirm = function (scriptName, message, okFunction, cancelFunction, okBtnText = "Ok", cancelBtnText = "Cancel") {
+        wazedevtoastr.confirm(message, scriptName, { confirmOK: okFunction, confirmCancel: cancelFunction, ConfirmOkButtonText: okBtnText, ConfirmCancelButtonText: cancelBtnText });
+    }
+}
+
+function Remote(){
+    function sendPOST(scriptName, scriptSettings){
+        return new Promise(function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://wazedev.com:8443", true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function(e) {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200)
+                        resolve(true)
+                    else
+                        reject(false)
+                }
+            }
+            xhr.send(JSON.stringify({
+                userID: W.loginManager.user.id.toString(),
+                pin: wwSettings.editorPIN,
+                script: scriptName,
+                settings: scriptSettings
+            }));
+        });
+    }
+
+    this.SaveSettings = async function(scriptName, scriptSettings){
+        if(wwSettings.editorPIN === ""){
+            console.error("Editor PIN not set");
+            return null;
+        }
+        if(scriptName === ""){
+            console.error("No script name provided");
+            return null;
+        }
+        try{
+            return await sendPOST(scriptName, scriptSettings);
+            /*let result = await $.ajax({
+                    url: 'https://wazedev.com:8443', 
+                    type: 'POST', 
+                    contentType: 'application/json', 
+                    data: JSON.stringify({
+                        userID: W.loginManager.user.id,
+                        pin: wwSettings.editorPIN,
+                        script: scriptName,
+                        settings: scriptSettings
+                    })}
+                );
+                return result;*/
+        }
+        catch(err){
+            console.log(err);
+            return null;
         }
     }
-	
-	function Remote(){
-		function sendPOST(scriptName, scriptSettings){
-		    return new Promise(function (resolve, reject) {
-			var xhr = new XMLHttpRequest();
-			xhr.open("POST", "https://wazedev.com:8443", true);
-			xhr.setRequestHeader('Content-Type', 'application/json');
-			xhr.onreadystatechange = function(e) {
-			      if (xhr.readyState === 4) {
-				      if (xhr.status === 200)
-					  resolve(true)
-					else
-					  reject(false)
-			      	}
-			    }
-			xhr.send(JSON.stringify({
-			    userID: W.loginManager.user.id.toString(),
-			    pin: wwSettings.editorPIN,
-			    script: scriptName,
-			    settings: scriptSettings
-			    }));
-			});
-		}
 
-		this.SaveSettings = async function(scriptName, scriptSettings){
-			if(wwSettings.editorPIN === ""){
-				console.error("Editor PIN not set");
-				return null;
-			}
-			if(scriptName === ""){
-				console.error("No script name provided");
-				return null;
-			}
-			try{
-				return await sendPOST(scriptName, scriptSettings);
-				/*let result = await $.ajax({
-				    url: 'https://wazedev.com:8443', 
-				    type: 'POST', 
-				    contentType: 'application/json', 
-				    data: JSON.stringify({
-					    userID: W.loginManager.user.id,
-					    pin: wwSettings.editorPIN,
-					    script: scriptName,
-					    settings: scriptSettings
-					})}
-				);
-				return result;*/
-			}
-			catch(err){
-				console.log(err);
-				return null;
-			}
-		}
-		
-		this.RetrieveSettings = async function(script){
-			if(wwSettings.editorPIN === ""){
-				console.error("Editor PIN not set");
-				return null;
-			}
-			if(script === ""){
-				console.error("No script name provided");
-				return null;
-			}
-			try{
-				let response = await fetch(`https://wazedev.com/userID/${W.loginManager.user.id}/PIN/${wwSettings.editorPIN}/script/${script}`);
-				response = await response.json();
-				return response;
-			}
-			catch(err){
-				console.log(err);
-				return null;
-			}
-		}
-	}
-
-    function String() {
-        this.toTitleCase = function (str) {
-            return str.replace(/(?:^|\s)\w/g, function (match) {
-                return match.toUpperCase();
-            });
-        };
+    this.RetrieveSettings = async function(script){
+        if(wwSettings.editorPIN === ""){
+            console.error("Editor PIN not set");
+            return null;
+        }
+        if(script === ""){
+            console.error("No script name provided");
+            return null;
+        }
+        try{
+            let response = await fetch(`https://wazedev.com/userID/${W.loginManager.user.id}/PIN/${wwSettings.editorPIN}/script/${script}`);
+            response = await response.json();
+            return response;
+        }
+        catch(err){
+            console.log(err);
+            return null;
+        }
     }
+}
+
+function String() {
+    this.toTitleCase = function (str) {
+        return str.replace(/(?:^|\s)\w/g, function (match) {
+            return match.toUpperCase();
+        });
+    };
+}
 }.call(this));
